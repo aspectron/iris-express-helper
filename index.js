@@ -11,7 +11,7 @@ function IRISExpressHelper(core, options) {
             _inlineCss:{},
             _combineCacheQuery:{js:{}, css:{}},
             _options:{jsAtHead: false},
-            setMeta: function(meta){
+            meta: function(meta){
                 _.extend(this._meta, meta);
             },
             print: function(names, key, spacer){
@@ -26,6 +26,14 @@ function IRISExpressHelper(core, options) {
                 });
                 return list.join(spacer || "\n\t");
             },
+            title: function (title) { this.meta({title: title}) },
+            charset: function (charset) { this.meta({charset: charset}) },
+            canonical: function (canonical) { this.meta({canonical: canonical}) },
+            shortlink: function (shortlink) { this.meta({shortlink: shortlink}) },
+            description: function (description) { this.meta({description: description}) },
+            keywords: function (keywords) { this.meta({keywords: keywords}) },
+            viewport: function (viewport) { this.meta({viewport: viewport}) },
+            xuacompatible: function (content) { this.meta({"x-ua-compatible": content}) },
             printMeta: function(spacer){
                 spacer = spacer || "\n\t";
                 var list = [];
@@ -55,25 +63,25 @@ function IRISExpressHelper(core, options) {
             defineOptions: function (options) {
                 this._options = _.extend(options, this._options);
             },
-            setOptions: function (options) {
+            options: function (options) {
                 _.extend(this._options, options);
             },
-            setCacheQuery: function (query, key, type) {
+            cacheQuery: function (query, key, type) {
                 key = key || "header";
                 type = type || "js";
                 query = query || "?cache=0";
                 this._combineCacheQuery[type][key] = query;
             },
-            addInlineScript: function(content, priority, key){
+            inlineScript: function(content, priority, key){
                 this._add("inlineJs", key, content, priority);
             },
-            addInlineCss: function(content, priority, key){
+            inlineCss: function(content, priority, key){
                 this._add("inlineCss", key, content, priority);
             },
-            addCss: function(path, priority, key){
+            css: function(path, priority, key){
                 this._add("css", key, path, priority);
             },
-            addScript: function(path, priority, key){
+            script: function(path, priority, key){
                 this._add("js", key, path, priority);
             },
             printInlineScript: function(key, spacer){
