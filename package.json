@@ -1,0 +1,9 @@
+{
+  "name": "iris-express-helper",
+  "version": "0.1.0",
+  "private": true,
+  "main": "index.js",
+  "dependencies": {
+    "underscore": "*"
+  }
+}
