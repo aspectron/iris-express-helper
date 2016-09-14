@@ -37,13 +37,57 @@ function IRISExpressHelper(core, options) {
             htmlEntities: function(str) {
                 return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g,'&apos');
             },
+            urlEncode: function(str){
+                var me = this;
+                //return encodeURI(str);
+                if (me._urlEncodeChars){
+                    var chars = me._urlEncodeChars;
+                    str = String(str);
+                    for(var i=0; i< chars.length; i++) {
+                        str = str.replace(chars[i].s, chars[i].r);
+                        //console.log("s", str, chars[i].s, chars[i].r)
+                    }
+
+                    return str;
+                }
+                me._urlEncodeChars = [];
+                //var testArray = [];
+                for(var i=0;i<256;i++) {
+                    var c = String.fromCharCode(i);
+                    var c2 = c;
+                    if(encodeURI(c) !== c && c != "%") {
+                        if (["[", "]", "}", "{", ".", "\\", "^", "*", "+", "?", "|"].indexOf(c2) != -1){
+                            c2 = '\\'+c2;
+                        }
+                        me._urlEncodeChars.push({
+                            s: new RegExp(c2, "g"),
+                            r: encodeURI(c)
+                        });
+                        /*
+                        testArray.push({
+                            character:c,
+                            encodeURI:encodeURI(c),
+                            encodeURIComponent:encodeURIComponent(c)
+                        });
+                        */
+
+                    }
+                }
+                //console.log("me._urlEncodeChars", me._urlEncodeChars)
+                return me.urlEncode(str);
+            },
             printMeta: function(spacer){
                 spacer = spacer || "\n\t";
-                var list = [], me = this;
+                var list = [], me = this, key;
                 _.each(this._meta, function(v, k){
-                    v = me.htmlEntities(v);
-                    k = me.htmlEntities(k);
-                    switch(k.toLowerCase()){
+                    key = k.toLowerCase();
+                    if (key == "canonical" || key == "shortlink"){
+                        v = me.urlEncode(v);
+                    }else{
+                        v = me.htmlEntities(v);
+                        k = me.htmlEntities(k);
+                    }
+                    switch(key){
                         case "title": return list.push('<title>'+v+'</title>');
                         case "charset": return list.push('<meta charset="'+v+'">');
                         case "canonical":
@@ -166,7 +210,7 @@ function IRISExpressHelper(core, options) {
                     case "inlineJs": return '<script>'+items.join(spacer || "\n")+'</script>';
                     case "js":
                         _.each(items, function(item){
-                            f = me.htmlEntities(item.c)
+                            f = me.urlEncode(item.c)
                             if ( f[0] =="/" || f.indexOf("http") === 0 || f.indexOf(".js") > 0 ){
                                 c.push('<script src="'+f+'"></script>');
                                 return
@@ -174,12 +218,12 @@ function IRISExpressHelper(core, options) {
                             combineable.push(f);
                         });
                         if (combineable.length){
-                            c.push('<script src="/combine:js:'+combineable.join(";")+ (this._combineCacheQuery.js[key] ? this._combineCacheQuery.js[key] : "") +'"></script>');
+                            c.push('<script src="/combine:js:'+combineable.join(";").replace(/\//g, ":") + (this._combineCacheQuery.js[key] ? this._combineCacheQuery.js[key] : "") +'"></script>');
                         }
                     break;
                     case "css":
                         _.each(items, function(item){
-                            f = me.htmlEntities(item.c)
+                            f = me.urlEncode(item.c)
                             if ( f[0] =="/" || f.indexOf("http") === 0 || f.indexOf(".css") > 0 ){
                                 c.push('<link rel="stylesheet" type="text/css" href="'+f+'" />');
                                 return
@@ -187,7 +231,7 @@ function IRISExpressHelper(core, options) {
                             combineable.push(f);
                         });
                         if (combineable.length){
-                            c.push('<link rel="stylesheet" type="text/css" href="/combine:css:'+combineable.join(";")+ (this._combineCacheQuery.css[key] ? this._combineCacheQuery.css[key] : "") +'" />');
+                            c.push('<link rel="stylesheet" type="text/css" href="/combine:css:'+combineable.join(";").replace(/\//g, ":")+ (this._combineCacheQuery.css[key] ? this._combineCacheQuery.css[key] : "") +'" />');
                         }
                     break;
                 }
