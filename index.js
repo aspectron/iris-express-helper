@@ -34,10 +34,15 @@ function IRISExpressHelper(core, options) {
             keywords: function (keywords) { this.meta({keywords: keywords}) },
             viewport: function (viewport) { this.meta({viewport: viewport}) },
             xuacompatible: function (content) { this.meta({"x-ua-compatible": content}) },
+            htmlEntities: function(str) {
+                return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g,'&apos');
+            },
             printMeta: function(spacer){
                 spacer = spacer || "\n\t";
-                var list = [];
+                var list = [], me = this;
                 _.each(this._meta, function(v, k){
+                    v = me.htmlEntities(v);
+                    k = me.htmlEntities(k);
                     switch(k.toLowerCase()){
                         case "title": return list.push('<title>'+v+'</title>');
                         case "charset": return list.push('<meta charset="'+v+'">');
@@ -113,6 +118,7 @@ function IRISExpressHelper(core, options) {
                 return this._options[name];
             },
             _print: function(type, key, spacer){
+                var me = this;
                 if(type == "meta")
                     return this.printMeta(spacer);
 
@@ -160,7 +166,7 @@ function IRISExpressHelper(core, options) {
                     case "inlineJs": return '<script>'+items.join(spacer || "\n")+'</script>';
                     case "js":
                         _.each(items, function(item){
-                            f = item.c;
+                            f = me.htmlEntities(item.c)
                             if ( f[0] =="/" || f.indexOf("http") === 0 || f.indexOf(".js") > 0 ){
                                 c.push('<script src="'+f+'"></script>');
                                 return
@@ -173,7 +179,7 @@ function IRISExpressHelper(core, options) {
                     break;
                     case "css":
                         _.each(items, function(item){
-                             f = item.c;
+                            f = me.htmlEntities(item.c)
                             if ( f[0] =="/" || f.indexOf("http") === 0 || f.indexOf(".css") > 0 ){
                                 c.push('<link rel="stylesheet" type="text/css" href="'+f+'" />');
                                 return
