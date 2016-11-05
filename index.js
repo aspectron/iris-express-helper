@@ -10,7 +10,8 @@ function IRISExpressHelper(core, options) {
             _css:{},
             _inlineCss:{},
             _combineCacheQuery:{js:{}, css:{}},
-            _options:{jsAtHead: false},
+            _options:{jsAtHead: 0},
+            debug: false,
             meta: function(meta){
                 _.extend(this._meta, meta);
             },
@@ -19,6 +20,7 @@ function IRISExpressHelper(core, options) {
                 var list = [], me = this, s;
                 _.each(names, function(name){
                     name = name.split("|");
+                    me.debug && console.log("print--> name[0], key::", name[0], key || name[1])
                     s = me._print(name[0], key || name[1], name[2]);
                     if (!s)
                         return;
@@ -163,6 +165,7 @@ function IRISExpressHelper(core, options) {
             },
             _print: function(type, key, spacer){
                 var me = this;
+                me.debug && console.log("_print1-->type,key::", type, key)
                 if(type == "meta")
                     return this.printMeta(spacer);
 
@@ -177,17 +180,17 @@ function IRISExpressHelper(core, options) {
                 }
 
                 if ( type == "inlineJs" || type == "js" ) {
-                    var jsAtHead = this._opt('jsAtHead', false);
-                    if(key == "header" && !jsAtHead ) {
+                    var jsAtHead = this._opt('jsAtHead', 0);
+                    if(key == "header" && jsAtHead===false ) {
                         return "";
-                    }else if(key == "footer" && jsAtHead ){
+                    }else if(key == "footer" && jsAtHead===true ){
                         return "";
                     }
-                    if (key == "footer")
+                    if (jsAtHead===false && key == "footer")
                         key = "header";
                 }
-
                 var list = this["_"+type];
+                me.debug && console.log("_print3-->type,_type,list::", type, _type, list)
                 if (!list)
                     return "";
 
@@ -209,6 +212,7 @@ function IRISExpressHelper(core, options) {
                     case "inlineCss": return '<style>'+items.join(spacer || "\n")+'</style>';
                     case "inlineJs": return '<script>'+items.join(spacer || "\n")+'</script>';
                     case "js":
+                        me.debug &&  console.log("_print-->c1::",c)
                         _.each(items, function(item){
                             f = me.urlEncode(item.c)
                             if ( f[0] =="/" || f.indexOf("http") === 0 || f.indexOf(".js") > 0 ){
@@ -220,6 +224,8 @@ function IRISExpressHelper(core, options) {
                         if (combineable.length){
                             c.push('<script src="/combine:js:'+combineable.join(";").replace(/\//g, ":") + (this._combineCacheQuery.js[key] ? this._combineCacheQuery.js[key] : "") +'"></script>');
                         }
+
+                        me.debug &&  console.log("_print-->c2::",c)
                     break;
                     case "css":
                         _.each(items, function(item){
