@@ -37,7 +37,7 @@ function IRISExpressHelper(core, options) {
             viewport: function (viewport) { this.meta({viewport: viewport}) },
             xuacompatible: function (content) { this.meta({"x-ua-compatible": content}) },
             htmlEntities: function(str) {
-                return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g,'&apos');
+                return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g,'&apos;');
             },
             urlEncode: function(str){
                 var me = this;
